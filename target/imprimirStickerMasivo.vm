@@ -1,0 +1,148 @@
+#foreach( $remito in $object.list )
+##declaro y asigno variables
+#set($guion = "-")
+#set($clave = " ")
+#set($tipoEntrega = " ")
+
+#if($remito.flgClaveSeguridad == "1")
+#set($clave = "CON CLAVE")
+#end
+
+#if($remito.flgClaveSeguridad == "0")
+#set($clave = "SIN CLAVE")
+#end
+
+#if($remito.flgEntregaOficina == "1")
+#set($tipoEntrega = "TIENDA")
+#else
+#set($tipoEntrega = "DOMICILIO")
+#end
+
+#set($devolucion = $remito.idSedeDevolucion)
+#if($remito.imprimirSticker == "IMPRIMIR")
+#set($direccion1 = $util.substring($remito.direccionEntrega ,0,52 ))
+#set($direccion2 = $util.substring($remito.direccionEntrega ,52,120 ))
+#set($direccion3 = $util.substring($remito.direccionEntrega ,64,101 ))
+#set($envia = $util.substring($remito.nombreRSocialCliente ,0,25 ))
+#set($recibe = $util.substring($remito.consignado ,0,35 ))
+#foreach($pieza in [1..$remito.nroPiezas])
+#set($imprimirEstaPieza = true)
+#if($remito.piezaPistoleada && $remito.piezaPistoleada != "")
+  #if($pieza != $remito.piezaPistoleada)
+    #set($imprimirEstaPieza = false)
+  #end
+#end
+
+#if($imprimirEstaPieza)
+#set($varPieza = $pieza+"")
+#set($pieza_cadena = $util.leftPad($varPieza, 3,'0'))
+#set($total_pieza_cadena = $util.leftPad($remito.numPiezas, 3,'0'))
+
+N
+D15
+
+	
+	A640,30,0,3,1,1,N,"$remito.txtUbigeo"
+	A620,50,0,3,2,2,N,"$remito.codUbigeoDestinoFull"
+
+A30,30,0,2,1,1,N,"OLVA"
+A30,50,0,2,1,1,N,"$remito.nombreSedeOrigen - $remito.codOficina"
+	A190,30,0,2,1,1,N,"$remito.fechaEnvio"
+
+#if($devolucion)
+A30,70,0,2,1,1,N,"DEVUELVE:$recibe"
+#else
+A30,70,0,2,1,1,N,"ENVIA:$envia"
+#end
+
+	A320,30,0,4,4,3,N,"$remito.codSedeDestino"
+	A510,40,0,4,2,2,N,"$remito.tipoEnvio"
+
+B130,100,0,1,3,70,90,N,"$remito.tipoRemito$remito.emision$remito.remitoFull$pieza_cadena$total_pieza_cadena$remito.codUbigeoFull"
+
+	A30,200,0,3,1,2,N,"TRACKING:"
+	A160,200,0,3,1,2,N,"$remito.tipoRemito$guion$remito.emision$guion$remito.remitoFull"
+	A450,200,0,3,1,2,N,"($pieza/$remito.numPiezas)"
+	
+#if($devolucion)
+A620,210,0,3,1,2,N,"DEVOLUCION"
+#else
+A620,210,0,4,1,1,N,"S/ $remito.precioVenta"
+#end
+X610,200,3,790,240
+
+#if($remito.flgCentroTrabajo == "(C. TRABAJO)")
+A710,260,0,4,4,3,N,"T"
+X680,250,3,790,340
+#end
+
+A30,240,0,3,1,1,N,"RECIBE:"
+A130,240,0,2,1,1,N,"$recibe"
+A30,260,0,3,1,1,N,"DIRECCION:"
+A170,260,0,2,1,1,N,"$direccion1"
+A30,280,0,2,1,1,N,"$direccion2"
+#if($devolucion)
+A30,300,0,2,1,1,N,"MOT:$remito.motivoDev"
+#else
+A30,300,0,2,1,1,N,"DOC.EXT:$remito.docExterno"
+A300,300,0,2,1,1,N,"OBS:$remito.obsPart1"
+#end
+A30,320,0,2,1,1,N,"$remito.distrito - $remito.provincia - $remito.departamento"
+A520,340,0,3,1,1,N,"$tipoEntrega $clave"
+
+## flags de negocio
+#set($esFormatoCargoAdjunto = $remito.tipoRemito == "1")
+#set($esDevolucion = $devolucion)
+
+## condición final
+#set($mostrarFormatoFirma = !$esFormatoCargoAdjunto || ($esFormatoCargoAdjunto && $esDevolucion))
+
+#if($mostrarFormatoFirma)
+
+A30,340,0,4,1,1,N,"$remito.nombreServicio"
+
+A30,370,0,2,1,1,N,"NOMBRES:"
+A125,370,0,2,1,1,N,"______________________________"
+A30,400,0,2,1,1,N,"D.I:"
+A80,400,0,2,1,1,N,"__________________"
+
+X30,420,2,50,445
+A55,420,0,2,1,1,N,"TITULAR"
+
+X160,420,2,180,445
+A185,420,0,2,1,1,N,"FAMILIAR"
+
+X30,440,2,50,465
+A55,440,0,2,1,1,N,"EMPLEADO"
+
+X160,440,2,180,465
+A185,440,0,2,1,1,N,"VIGILANTE"
+
+A360,420,0,2,1,1,N,"___/___/____"
+A310,420,0,2,1,1,N,"FEC:"
+A360,450,0,2,1,1,N,"____:____"
+A310,450,0,2,1,1,N,"HOR:"
+
+A530,420,0,2,1,1,N,"______________________"
+A570,440,0,2,1,1,N,"FIRMA Y/O SELLO"
+A660,460,0,1,1,1,N,"OP-F-18 VS01"
+
+#else
+
+A30,380,0,4,2,2,N,"$remito.nombreServicio"
+A30,420,0,4,1,1,N,"(firmar en el cargo adjunto)"
+
+#end
+
+P1
+
+#end
+#end
+#end
+#if($remito.imprimirSticker == "IMPRIMIR_VACIO")
+N
+D15
+A150,315,0,4,1,1,N,"$remito.tipoRemito$guion$remito.emision$guion$remito.remitoFull"
+P1
+#end
+#end

@@ -1,0 +1,67 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Informe tecnico - Producto Academico N. 3</title>
+</head>
+<body>
+<h1>Informe tecnico - Producto Academico N. 3</h1>
+
+<h2>1. Resumen del proyecto</h2>
+<p>El proyecto <strong>olva-integration-hub</strong> integra servicios web de Ripley para consultar informacion de pedidos, registrar informacion en un sistema local y publicar eventos de trazabilidad hacia servicios externos de Ripley y Serhafen. La aplicacion esta construida con Spring Boot, tareas programadas Quartz, clientes HTTP con RestTemplate, repositorios para Oracle y pruebas unitarias con JUnit 5, AssertJ y Mockito.</p>
+<p>Para cumplir el Producto Academico N. 3 se adecuo el proyecto con evidencias concretas de pruebas unitarias, enfoque TDD, Katas TDD y ORM. La adecuacion se realizo de forma acotada para no alterar el flujo productivo actual de integracion, pero dejando clases ejecutables y probadas dentro del repositorio.</p>
+
+<h2>2. Objetivo</h2>
+<p>Aplicar pruebas unitarias y TDD sobre reglas relevantes del dominio de integracion: validacion de eventos, normalizacion de datos enviados a Ripley, decision de reintentos y persistencia local de eventos creados.</p>
+
+<h2>3. Pruebas unitarias implementadas</h2>
+<p>El proyecto ya contaba con pruebas sobre el despacho de notificaciones, job Quartz y gateway Serhafen. Se agregaron pruebas adicionales en:</p>
+<ul>
+    <li>src/test/java/com/olva/academic/kata/RipleyEventKataTest.java</li>
+    <li>src/test/java/com/olva/academic/kata/RipleyRetryKataTest.java</li>
+    <li>src/test/java/com/olva/academic/orm/MockRipleyEventOrmServiceTest.java</li>
+</ul>
+<p>Estas pruebas validan multiples escenarios: datos validos, datos obligatorios faltantes, normalizacion de CUD, eliminacion de duplicados, reintentos por error temporal, fallo al alcanzar el limite de intentos y persistencia mediante repositorio ORM mockeado.</p>
+
+<h2>4. Aplicacion de TDD</h2>
+<p>Se uso el ciclo Red-Green-Refactor en las clases academicas agregadas:</p>
+<ol>
+    <li><strong>Red:</strong> se escribieron pruebas que describen el comportamiento esperado antes de implementar la logica.</li>
+    <li><strong>Green:</strong> se implemento el codigo minimo en RipleyEventKata, RipleyRetryKata y MockRipleyEventOrmService.</li>
+    <li><strong>Refactor:</strong> se separaron responsabilidades en records de salida y entidades ORM.</li>
+</ol>
+<p>El enfoque permite que las reglas del negocio sean verificables sin depender de los servicios reales de Ripley ni de una base de datos Oracle disponible.</p>
+
+<h2>5. Katas TDD</h2>
+<p>Se aplicaron dos Katas TDD vinculadas al dominio:</p>
+<ul>
+    <li><strong>Kata 1:</strong> validacion y resumen de eventos Ripley. Problema: normalizar el codigo de evento y los CUD recibidos, evitando duplicados y rechazando datos incompletos.</li>
+    <li><strong>Kata 2:</strong> decision de reintento. Problema: decidir si un evento queda enviado, reintenta o falla segun el resultado HTTP y el numero de intentos.</li>
+</ul>
+<p>Cada kata tiene pruebas unitarias independientes, entradas controladas y resultados esperados. Esto permite mejorar la solucion por iteraciones sin impactar directamente las integraciones externas.</p>
+
+<h2>6. Uso de ORM</h2>
+<p>Se incorporo spring-boot-starter-data-jpa y se agregaron dos clases mock persistibles:</p>
+<ul>
+    <li><strong>MockRipleyOutboxEntity:</strong> representa un evento local pendiente de publicacion.</li>
+    <li><strong>MockRipleyEventAuditEntity:</strong> representa la auditoria del evento y su relacion con el outbox.</li>
+</ul>
+<p>Tambien se agrego MockRipleyOutboxJpaRepository, basado en Spring Data JPA, y MockRipleyEventOrmService, que registra eventos con una relacion uno-a-muchos entre outbox y auditorias. La prueba MockRipleyEventOrmServiceTest usa Mockito para validar la interaccion con el repositorio sin requerir una base de datos real.</p>
+
+<h2>7. Integracion en flujo agil</h2>
+<p>Las pruebas se integran al flujo Maven del proyecto mediante el comando:</p>
+<pre>./mvnw test</pre>
+<p>En un flujo de equipo, este comando debe ejecutarse antes de cada commit y en GitHub Actions o cualquier pipeline CI. La evidencia esperada para la entrega es el historial de commits, el resultado de pruebas y la documentacion de las iteraciones TDD.</p>
+
+<h2>8. Relacion con la rubrica</h2>
+<ul>
+    <li><strong>Diseno e implementacion de pruebas unitarias:</strong> se cubren escenarios exitosos y alternos con JUnit, AssertJ y Mockito.</li>
+    <li><strong>Aplicacion TDD:</strong> las clases nuevas fueron disenadas desde pruebas y documentadas bajo Red-Green-Refactor.</li>
+    <li><strong>Katas TDD:</strong> se agregaron katas de validacion de eventos y decision de reintentos.</li>
+    <li><strong>ORM:</strong> se agregaron entidades JPA, repositorio Spring Data y servicio transaccional.</li>
+    <li><strong>Flujo agil:</strong> las pruebas quedan ejecutables con Maven y listas para CI.</li>
+</ul>
+
+<h2>9. Conclusiones</h2>
+<p>La adecuacion permite demostrar practicas de calidad sin reescribir toda la integracion existente. Las pruebas unitarias reducen el riesgo en reglas criticas, las katas evidencian aprendizaje iterativo y el modulo ORM mock muestra como gestionar datos relacionales mediante entidades y repositorios JPA.</p>
+</body>
+</html>
